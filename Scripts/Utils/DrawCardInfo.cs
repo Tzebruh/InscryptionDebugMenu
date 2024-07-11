@@ -209,6 +209,11 @@ public static class DrawCardInfo // used for the deck editors
             ManageSpecialAbilities(cardInfo, playableCard, deckInfo, boardEditor, managerIndex);
         }
 
+        if (boardEditor ? HandleTransformerId(ref boardTransformerBeastCardIdField, cardInfo, deckInfo) : HandleTransformerId(ref transformerBeastCardIdField, cardInfo, deckInfo))
+        {
+            return Result.Altered;
+        }
+
         return Result.None;
 	}
 
@@ -1148,6 +1153,37 @@ public static class DrawCardInfo // used for the deck editors
 		page = num;
 	}
 
+    private static bool HandleTransformerId(ref string transformerBeastCardIdFieldRef, CardInfo cardInfo, DeckInfo deckInfo = null)
+    {
+        bool ret = false;
+
+        GUILayout.BeginHorizontal();
+
+        transformerBeastCardIdFieldRef = GUILayout.TextField(transformerBeastCardIdFieldRef);
+        if (GUILayout.Button("Set Transformer Beast Card ID"))
+        {
+            CardModificationInfo mod = new() { transformerBeastCardId = transformerBeastCardIdFieldRef };
+
+            CardModificationInfo oldMod = cardInfo.Mods.Find((a) => !a.transformerBeastCardId.IsNullOrWhiteSpace());
+            if (oldMod != null) cardInfo.Mods.Remove(oldMod);
+
+            if (deckInfo != null)
+            {
+                deckInfo.ModifyCard(cardInfo, mod);
+                SaveManager.SaveToFile(false);
+            }
+            else
+            {
+                cardInfo.Mods.Add(mod);
+            }
+            ret = true;
+        }
+
+        GUILayout.EndHorizontal();
+
+        return ret;
+    }
+
     private static readonly string[] managementMenuHeaders = new string[2] { "Sigils", "Special Abilities" };
     private static readonly string[] abilityManagementTabs = new string[2] { "Edit", "Add" };
     private static readonly string[] specialManagementTabs = new string[2] { "Remove", "Add" };
@@ -1171,6 +1207,7 @@ public static class DrawCardInfo // used for the deck editors
     private static int specialAbilitySelector = 0;
     private static Vector2 specialAbilityListVector2 = Vector2.zero;
     private static Vector2 specialAbilityListVector = Vector2.zero;
+    private static string transformerBeastCardIdField = "";
 
     // these exist so the two menus don't interact with each other
     // yes, it's a straight copy-paste job, no I don't care
@@ -1186,6 +1223,7 @@ public static class DrawCardInfo // used for the deck editors
     private static int boardSpecialAbilitySelector = 0;
     private static Vector2 boardSpecialAbilityListVector2 = Vector2.zero;
     private static Vector2 boardSpecialAbilityListVector = Vector2.zero;
+    private static string boardTransformerBeastCardIdField = "";
 
     private static bool negateSigil = true;
     private static bool asCardMerge = false;
